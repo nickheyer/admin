@@ -12,7 +12,7 @@ type RouteConfig struct {
 	Resource       *Resource
 	Permissioner   HasPermissioner
 	PermissionMode roles.PermissionMode
-	Values         map[interface{}]interface{}
+	Values         map[any]any
 }
 
 type requestHandler func(c *Context)

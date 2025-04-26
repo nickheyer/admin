@@ -78,7 +78,7 @@ func TestPagination(t *testing.T) {
 	for _, count := range []int{8, 10} {
 		context.Searcher.Pagination.Total = count
 		if context.Pagination() != nil {
-			t.Error(fmt.Sprintf("Don't display pagination if only has one page (%v)", count))
+			t.Errorf("Don't display pagination if only has one page (%v)", count)
 		}
 	}
 

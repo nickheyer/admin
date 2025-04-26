@@ -8,21 +8,22 @@ import (
 )
 
 // Section is used to structure forms, it could group your fields into sections, to make your form clean & tidy
-//    product.EditAttrs(
-//      &admin.Section{
-//      	Title: "Basic Information",
-//      	Rows: [][]string{
-//      		{"Name"},
-//      		{"Code", "Price"},
-//      	}},
-//      &admin.Section{
-//      	Title: "Organization",
-//      	Rows: [][]string{
-//      		{"Category", "Collections", "MadeCountry"},
-//      	}},
-//      "Description",
-//      "ColorVariations",
-//    }
+//
+//	product.EditAttrs(
+//	  &admin.Section{
+//	  	Title: "Basic Information",
+//	  	Rows: [][]string{
+//	  		{"Name"},
+//	  		{"Code", "Price"},
+//	  	}},
+//	  &admin.Section{
+//	  	Title: "Organization",
+//	  	Rows: [][]string{
+//	  		{"Category", "Collections", "MadeCountry"},
+//	  	}},
+//	  "Description",
+//	  "ColorVariations",
+//	}
 type Section struct {
 	Resource *Resource
 	Title    string
@@ -34,7 +35,7 @@ func (section *Section) String() string {
 	return fmt.Sprint(section.Rows)
 }
 
-func (res *Resource) generateSections(values ...interface{}) []*Section {
+func (res *Resource) generateSections(values ...any) []*Section {
 	var sections []*Section
 	var hasColumns, excludedColumns []string
 
@@ -108,7 +109,7 @@ func isContainsColumn(hasColumns []string, column string) bool {
 	return false
 }
 
-func containsPositiveValue(values ...interface{}) bool {
+func containsPositiveValue(values ...any) bool {
 	for _, value := range values {
 		if _, ok := value.(*Section); ok {
 			return true
@@ -144,21 +145,19 @@ func (res *Resource) ConvertSectionToStrings(sections []*Section) []string {
 	var columns []string
 	for _, section := range sections {
 		for _, row := range section.Rows {
-			for _, col := range row {
-				columns = append(columns, col)
-			}
+			columns = append(columns, row...)
 		}
 	}
 	return columns
 }
 
-func (res *Resource) setSections(sections *[]*Section, values ...interface{}) {
+func (res *Resource) setSections(sections *[]*Section, values ...any) {
 	if len(values) == 0 {
 		if len(*sections) == 0 {
 			*sections = res.generateSections(res.allAttrs())
 		}
 	} else {
-		var flattenValues []interface{}
+		var flattenValues []any
 
 		for _, value := range values {
 			if columns, ok := value.([]string); ok {

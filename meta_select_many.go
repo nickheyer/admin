@@ -14,7 +14,7 @@ import (
 
 // SelectManyConfig meta configuration used for select many
 type SelectManyConfig struct {
-	Collection               interface{} // []string, [][]string, func(interface{}, *qor.Context) [][]string, func(interface{}, *admin.Context) [][]string
+	Collection               any // []string, [][]string, func(any, *qor.Context) [][]string, func(any, *admin.Context) [][]string
 	DefaultCreating          bool
 	Placeholder              string
 	SelectionTemplate        string
@@ -56,7 +56,7 @@ func (selectManyConfig *SelectManyConfig) ConfigureQorMeta(metaor resource.Metao
 
 		// Set FormattedValuer
 		if meta.FormattedValuer == nil {
-			meta.SetFormattedValuer(func(record interface{}, context *qor.Context) interface{} {
+			meta.SetFormattedValuer(func(record any, context *qor.Context) any {
 				reflectValues := reflect.Indirect(reflect.ValueOf(meta.GetValuer()(record, context)))
 				var results []string
 				if reflectValues.IsValid() {
@@ -89,10 +89,10 @@ func (selectManyConfig *SelectManyConfig) ConfigureQORAdminFilter(filter *Filter
 }
 
 // FilterValue filter value
-func (selectManyConfig *SelectManyConfig) FilterValue(filter *Filter, context *Context) interface{} {
+func (selectManyConfig *SelectManyConfig) FilterValue(filter *Filter, context *Context) any {
 	var (
 		prefix  = fmt.Sprintf("filters[%v].", filter.Name)
-		keyword interface{}
+		keyword any
 	)
 
 	if metaValues, err := resource.ConvertFormToMetaValues(context.Request, []resource.Metaor{}, prefix); err == nil {

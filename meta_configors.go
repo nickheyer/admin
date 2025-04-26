@@ -32,7 +32,7 @@ var defaultMetaConfigorMaps = map[string]func(*Meta){
 
 	"string": func(meta *Meta) {
 		if meta.FormattedValuer == nil {
-			meta.SetFormattedValuer(func(value interface{}, context *qor.Context) interface{} {
+			meta.SetFormattedValuer(func(value any, context *qor.Context) any {
 				switch str := meta.GetValuer()(value, context).(type) {
 				case *string:
 					if str != nil {
@@ -50,7 +50,7 @@ var defaultMetaConfigorMaps = map[string]func(*Meta){
 
 	"text": func(meta *Meta) {
 		if meta.FormattedValuer == nil {
-			meta.SetFormattedValuer(func(value interface{}, context *qor.Context) interface{} {
+			meta.SetFormattedValuer(func(value any, context *qor.Context) any {
 				switch str := meta.GetValuer()(value, context).(type) {
 				case *string:
 					if str != nil {

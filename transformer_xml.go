@@ -22,7 +22,7 @@ func (XMLTransformer) CouldEncode(encoder Encoder) bool {
 
 // Encode encode encoder to writer as XML
 func (XMLTransformer) Encode(writer io.Writer, encoder Encoder) error {
-	xmlMarshaler := XMLStruct{
+	xmlMarshaler := &XMLStruct{
 		Action:   encoder.Action,
 		Resource: encoder.Resource,
 		Context:  encoder.Context,
@@ -45,11 +45,11 @@ type XMLStruct struct {
 	Action   string
 	Resource *Resource
 	Context  *Context
-	Result   interface{}
+	Result   any
 }
 
 // Initialize initialize a resource to XML Transformer
-func (xmlStruct XMLStruct) Initialize(value interface{}, res *Resource) XMLStruct {
+func (xmlStruct XMLStruct) Initialize(value any, res *Resource) XMLStruct {
 	return XMLStruct{
 		Resource: res,
 		Action:   xmlStruct.Action,

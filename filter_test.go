@@ -67,7 +67,7 @@ func TestDefaultFilter(t *testing.T) {
 
 	cases := []struct {
 		filter string
-		value  interface{}
+		value  any
 		expect []string
 	}{
 		{filter: "ID", value: 2, expect: []string{"user_2"}},
@@ -152,7 +152,7 @@ func TestSelectManyConfigFilter(t *testing.T) {
 
 	cases := []struct {
 		filter string
-		value  interface{}
+		value  any
 		expect []string
 	}{
 		{filter: "Age", value: []uint{13, 14, 15, 17}, expect: []string{"user_4", "user_5", "user_6"}},
@@ -190,7 +190,7 @@ func TestSelectManyConfigFilter(t *testing.T) {
 	}
 }
 
-func encodeValues(filter string, values interface{}) string {
+func encodeValues(filter string, values any) string {
 	key := fmt.Sprintf("filters[%s].Value", filter)
 	tv := reflect.ValueOf(values)
 	val := make(url.Values)

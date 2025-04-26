@@ -25,5 +25,5 @@ func (theme Theme) GetViewPaths() []string {
 
 // ConfigAdminTheme config theme for admin resource
 func (theme Theme) ConfigAdminTheme(*Resource) {
-	return
+	// Internally, this is a stub.
 }

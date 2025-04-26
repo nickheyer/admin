@@ -21,16 +21,16 @@ type Context struct {
 	Admin        *Admin
 	Content      template.HTML
 	Action       string
-	Settings     map[string]interface{}
+	Settings     map[string]any
 	RouteHandler *routeHandler
-	Result       interface{}
+	Result       any
 
 	funcMaps template.FuncMap
 }
 
 // NewContext new admin context
 func (admin *Admin) NewContext(w http.ResponseWriter, r *http.Request) *Context {
-	return &Context{Context: &qor.Context{Config: &qor.Config{DB: admin.DB}, Request: r, Writer: w}, Admin: admin, Settings: map[string]interface{}{}}
+	return &Context{Context: &qor.Context{Config: &qor.Config{DB: admin.DB}, Request: r, Writer: w}, Admin: admin, Settings: map[string]any{}}
 }
 
 // Funcs register FuncMap for templates
@@ -54,12 +54,12 @@ func (context *Context) Flash(message string, typ string) {
 }
 
 // Get get context's Settings
-func (context *Context) Get(key string) interface{} {
+func (context *Context) Get(key string) any {
 	return context.Settings[key]
 }
 
 // Set set context's Settings
-func (context *Context) Set(key string, value interface{}) {
+func (context *Context) Set(key string, value any) {
 	context.Settings[key] = value
 }
 
@@ -148,7 +148,7 @@ func (context *Context) setResource(res *Resource) *Context {
 }
 
 // renderText render text based on data
-func (context *Context) renderText(text string, data interface{}) template.HTML {
+func (context *Context) renderText(text string, data any) template.HTML {
 	var (
 		err    error
 		tmpl   *template.Template
@@ -165,7 +165,7 @@ func (context *Context) renderText(text string, data interface{}) template.HTML 
 }
 
 // renderWith render template based on data
-func (context *Context) renderWith(name string, data interface{}) template.HTML {
+func (context *Context) renderWith(name string, data any) template.HTML {
 	var (
 		err     error
 		content []byte
@@ -178,7 +178,7 @@ func (context *Context) renderWith(name string, data interface{}) template.HTML 
 }
 
 // Render render template based on context
-func (context *Context) Render(name string, results ...interface{}) template.HTML {
+func (context *Context) Render(name string, results ...any) template.HTML {
 	defer func() {
 		if r := recover(); r != nil {
 			err := fmt.Errorf("Get error when render file %v: %v", name, r)
@@ -195,7 +195,7 @@ func (context *Context) Render(name string, results ...interface{}) template.HTM
 }
 
 // Execute execute template with layout
-func (context *Context) Execute(name string, result interface{}) {
+func (context *Context) Execute(name string, result any) {
 	var tmpl *template.Template
 
 	if name == "show" && !context.Resource.sections.ConfiguredShowAttrs {
@@ -230,14 +230,14 @@ func (context *Context) Execute(name string, result interface{}) {
 }
 
 // JSON generate json outputs for action
-func (context *Context) JSON(action string, result interface{}) {
+func (context *Context) JSON(action string, result any) {
 	if context.Encode(action, result) == nil {
 		context.Writer.Header().Set("Content-Type", "application/json")
 	}
 }
 
 // Encode encode result for an action
-func (context *Context) Encode(action string, result interface{}) error {
+func (context *Context) Encode(action string, result any) error {
 	if action == "show" && !context.Resource.sections.ConfiguredShowAttrs {
 		action = "edit"
 	}

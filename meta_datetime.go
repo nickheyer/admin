@@ -34,7 +34,7 @@ func (datetimeConfig *DatetimeConfig) ConfigureQorMeta(metaor resource.Metaor) {
 		}
 
 		if meta.FormattedValuer == nil {
-			meta.SetFormattedValuer(func(value interface{}, context *qor.Context) interface{} {
+			meta.SetFormattedValuer(func(value any, context *qor.Context) any {
 				switch date := meta.GetValuer()(value, context).(type) {
 				case *time.Time:
 					if date == nil {

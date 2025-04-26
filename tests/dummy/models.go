@@ -71,6 +71,6 @@ func (u User) GetID() uint {
 	return u.ID
 }
 
-func (u User) GetUsersByIDs(db *gorm.DB, ids []string) interface{} {
+func (u User) GetUsersByIDs(db *gorm.DB, ids []string) any {
 	return u
 }

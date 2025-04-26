@@ -87,7 +87,7 @@ func TestJSONTransformerEncode(t *testing.T) {
 
 	diff := testingutils.PrettyJsonDiff(expect, response)
 	if len(diff) > 0 {
-		t.Errorf("Got %v\n\n\n\n%v", string(buffer.Bytes()), diff)
+		t.Errorf("Got %v\n\n\n\n%v", buffer.String(), diff)
 	}
 }
 
@@ -96,7 +96,7 @@ func TestJSONTransformerEncodeMap(t *testing.T) {
 		buffer          bytes.Buffer
 		jsonTransformer = &admin.JSONTransformer{}
 		encoder         = admin.Encoder{
-			Result: map[string]interface{}{"error": []error{errors.New("error1"), errors.New("error2")}},
+			Result: map[string]any{"error": []error{errors.New("error1"), errors.New("error2")}},
 		}
 	)
 

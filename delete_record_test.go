@@ -25,6 +25,6 @@ func TestDeleteRecord(t *testing.T) {
 			t.Errorf("User should be deleted successfully")
 		}
 	} else {
-		t.Errorf(err.Error())
+		t.Error(err.Error())
 	}
 }

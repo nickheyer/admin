@@ -9,7 +9,7 @@ import (
 // SingleEditConfig meta configuration used for single edit
 type SingleEditConfig struct {
 	Template string
-	metaConfig
+	_        metaConfig
 }
 
 // GetTemplate get template for single edit

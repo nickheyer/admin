@@ -102,7 +102,7 @@ func generateRemoteItemSelector(adm *admin.Admin) (res *admin.Resource) {
 	// Required. Convert single ID into composite primary key
 	res.Meta(&admin.Meta{
 	Name: "ID",
-	Valuer: func(value interface{}, ctx *qor.Context) interface{} {
+	Valuer: func(value any, ctx *qor.Context) any {
 		if r, ok := value.(*Item); ok {
 			// github.com/qor/qor/resource
 			return resource.GenCompositePrimaryKey(r.ID, r.GetVersionName())
@@ -160,7 +160,7 @@ func generateRemoteManagerSelector(adm *admin.Admin) (res *admin.Resource) {
 	// Required. Convert single ID into composite primary key
 	res.Meta(&admin.Meta{
 		Name: "ID",
-		Valuer: func(value interface{}, ctx *qor.Context) interface{} {
+		Valuer: func(value any, ctx *qor.Context) any {
 			if r, ok := value.(*Manager); ok {
 				// github.com/qor/qor/resource
 				return resource.GenCompositePrimaryKey(r.ID, r.GetVersionName())
@@ -188,7 +188,7 @@ If you need to overwrite Collection. you have to pass composite primary key as t
 factoryRes.Meta(&admin.Meta{
   Name: "Items",
   Config: &admin.SelectManyConfig{
-	Collection: func(value interface{}, ctx *qor.Context) (results [][]string) {
+	Collection: func(value any, ctx *qor.Context) (results [][]string) {
 		if c, ok := value.(*Factory); ok {
 		var items []Item
 		ctx.GetDB().Model(c).Related(&items, "Items")

@@ -26,12 +26,12 @@ type Meta struct {
 	FieldName       string
 	Label           string
 	Type            string
-	Setter          func(record interface{}, metaValue *resource.MetaValue, context *qor.Context)
-	Valuer          func(record interface{}, context *qor.Context) (result interface{})
-	FormattedValuer func(record interface{}, context *qor.Context) (result interface{})
+	Setter          func(record any, metaValue *resource.MetaValue, context *qor.Context)
+	Valuer          func(record any, context *qor.Context) (result any)
+	FormattedValuer func(record any, context *qor.Context) (result any)
 	Permission      *roles.Permission
 	Config          MetaConfigInterface
-	Collection      interface{}
+	Collection      any
 	Resource        *Resource
 
 	metas        []resource.Metaor
@@ -50,7 +50,7 @@ func (meta *Meta) SetPermission(permission *roles.Permission) {
 
 // HasPermission check has permission or not
 func (meta Meta) HasPermission(mode roles.PermissionMode, context *qor.Context) bool {
-	var roles = []interface{}{}
+	var roles = []any{}
 	for _, role := range context.Roles {
 		roles = append(roles, role)
 	}
@@ -219,7 +219,7 @@ func (meta *Meta) configure() {
 		} else {
 			if relationship := meta.FieldStruct.Relationship; relationship != nil {
 				if (relationship.Kind == "has_one" || relationship.Kind == "has_many") && meta.Meta.Setter == nil && (meta.Type == "select_one" || meta.Type == "select_many") {
-					meta.SetSetter(func(resource interface{}, metaValue *resource.MetaValue, context *qor.Context) {
+					meta.SetSetter(func(resource any, metaValue *resource.MetaValue, context *qor.Context) {
 						scope := &gorm.Scope{Value: resource}
 						reflectValue := reflect.Indirect(reflect.ValueOf(resource))
 						field := reflectValue.FieldByName(meta.FieldName)
@@ -254,7 +254,7 @@ func (meta *Meta) configure() {
 	{ // Set Meta Resource
 		if hasColumn {
 			if meta.Resource == nil {
-				var result interface{}
+				var result any
 
 				if fieldType.Kind() == reflect.Struct {
 					result = reflect.New(fieldType).Interface()

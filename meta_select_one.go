@@ -15,7 +15,7 @@ import (
 
 // SelectOneConfig meta configuration used for select one
 type SelectOneConfig struct {
-	Collection               interface{} // []string, [][]string, func(interface{}, *qor.Context) [][]string, func(interface{}, *admin.Context) [][]string
+	Collection               any // []string, [][]string, func(any, *qor.Context) [][]string, func(any, *admin.Context) [][]string
 	Placeholder              string
 	AllowBlank               bool
 	DefaultCreating          bool
@@ -27,8 +27,8 @@ type SelectOneConfig struct {
 	RemoteDataHasImage       bool
 	ForSerializedObject      bool
 	PrimaryField             string
-	metaConfig
-	getCollection func(interface{}, *Context) [][]string
+	_                        metaConfig
+	getCollection            func(any, *Context) [][]string
 }
 
 // GetPlaceholder get placeholder
@@ -45,7 +45,7 @@ func (selectOneConfig SelectOneConfig) GetTemplate(context *Context, metaType st
 }
 
 // GetCollection get collections from select one meta
-func (selectOneConfig *SelectOneConfig) GetCollection(value interface{}, context *Context) [][]string {
+func (selectOneConfig *SelectOneConfig) GetCollection(value any, context *Context) [][]string {
 	if selectOneConfig.getCollection == nil {
 		selectOneConfig.prepareDataSource(nil, nil, "!remote_data_selector")
 	}
@@ -61,7 +61,7 @@ func (selectOneConfig *SelectOneConfig) ConfigureQorMeta(metaor resource.Metaor)
 	if meta, ok := metaor.(*Meta); ok {
 		// Set FormattedValuer
 		if meta.FormattedValuer == nil {
-			meta.SetFormattedValuer(func(record interface{}, context *qor.Context) interface{} {
+			meta.SetFormattedValuer(func(record any, context *qor.Context) any {
 				return utils.Stringify(meta.GetValuer()(record, context))
 			})
 		}
@@ -88,7 +88,7 @@ func (selectOneConfig *SelectOneConfig) ConfigureQORAdminFilter(filter *Filter) 
 }
 
 // FilterValue filter value
-func (selectOneConfig *SelectOneConfig) FilterValue(filter *Filter, context *Context) interface{} {
+func (selectOneConfig *SelectOneConfig) FilterValue(filter *Filter, context *Context) any {
 	var (
 		prefix  = fmt.Sprintf("filters[%v].", filter.Name)
 		keyword string
@@ -118,21 +118,21 @@ func (selectOneConfig *SelectOneConfig) prepareDataSource(field *gorm.StructFiel
 		selectOneConfig.SelectMode = "select"
 
 		if values, ok := selectOneConfig.Collection.([]string); ok {
-			selectOneConfig.getCollection = func(interface{}, *Context) (results [][]string) {
+			selectOneConfig.getCollection = func(any, *Context) (results [][]string) {
 				for _, value := range values {
 					results = append(results, []string{value, value})
 				}
 				return
 			}
 		} else if maps, ok := selectOneConfig.Collection.([][]string); ok {
-			selectOneConfig.getCollection = func(interface{}, *Context) [][]string {
+			selectOneConfig.getCollection = func(any, *Context) [][]string {
 				return maps
 			}
-		} else if fc, ok := selectOneConfig.Collection.(func(interface{}, *qor.Context) [][]string); ok {
-			selectOneConfig.getCollection = func(record interface{}, context *Context) [][]string {
+		} else if fc, ok := selectOneConfig.Collection.(func(any, *qor.Context) [][]string); ok {
+			selectOneConfig.getCollection = func(record any, context *Context) [][]string {
 				return fc(record, context.Context)
 			}
-		} else if fc, ok := selectOneConfig.Collection.(func(interface{}, *Context) [][]string); ok {
+		} else if fc, ok := selectOneConfig.Collection.(func(any, *Context) [][]string); ok {
 			selectOneConfig.getCollection = fc
 		} else {
 			utils.ExitWithMsg("Unsupported Collection format")
@@ -163,7 +163,7 @@ func (selectOneConfig *SelectOneConfig) prepareDataSource(field *gorm.StructFiel
 			selectOneConfig.SelectMode = "select_async"
 		}
 
-		selectOneConfig.getCollection = func(_ interface{}, context *Context) (results [][]string) {
+		selectOneConfig.getCollection = func(_ any, context *Context) (results [][]string) {
 			cloneContext := context.clone()
 			cloneContext.setResource(selectOneConfig.RemoteDataResource)
 			searcher := &Searcher{Context: cloneContext}

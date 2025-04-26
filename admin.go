@@ -43,7 +43,7 @@ type Admin struct {
 }
 
 // New new admin with configuration
-func New(config interface{}) *Admin {
+func New(config any) *Admin {
 	admin := Admin{
 		funcMaps:         make(template.FuncMap),
 		router:           newRouter(),
@@ -136,7 +136,7 @@ func (admin *Admin) RegisterMetaConfigor(kind string, fc func(*Meta)) {
 }
 
 // RegisterFuncMap register view funcs, it could be used in view templates
-func (admin *Admin) RegisterFuncMap(name string, fc interface{}) {
+func (admin *Admin) RegisterFuncMap(name string, fc any) {
 	admin.funcMaps[name] = fc
 }
 
@@ -145,7 +145,7 @@ func (admin *Admin) GetRouter() *Router {
 	return admin.router
 }
 
-func (admin *Admin) newResource(value interface{}, config ...*Config) *Resource {
+func (admin *Admin) newResource(value any, config ...*Config) *Resource {
 	var configuration *Config
 	if len(config) > 0 {
 		configuration = config[0]
@@ -184,7 +184,7 @@ func (admin *Admin) newResource(value interface{}, config ...*Config) *Resource 
 	}
 
 	findOneHandler := res.FindOneHandler
-	res.FindOneHandler = func(result interface{}, metaValues *resource.MetaValues, context *qor.Context) error {
+	res.FindOneHandler = func(result any, metaValues *resource.MetaValues, context *qor.Context) error {
 		if context.ResourceID == "" {
 			context.ResourceID = res.GetPrimaryValue(context.Request)
 		}
@@ -196,7 +196,7 @@ func (admin *Admin) newResource(value interface{}, config ...*Config) *Resource 
 }
 
 // NewResource initialize a new qor resource, won't add it to admin, just initialize it
-func (admin *Admin) NewResource(value interface{}, config ...*Config) *Resource {
+func (admin *Admin) NewResource(value any, config ...*Config) *Resource {
 	res := admin.newResource(value, config...)
 	res.Config.Invisible = true
 	res.configure()
@@ -204,7 +204,7 @@ func (admin *Admin) NewResource(value interface{}, config ...*Config) *Resource 
 }
 
 // AddResource make a model manageable from admin interface
-func (admin *Admin) AddResource(value interface{}, config ...*Config) *Resource {
+func (admin *Admin) AddResource(value any, config ...*Config) *Resource {
 	res := admin.newResource(value, config...)
 	admin.resources = append(admin.resources, res)
 
@@ -214,7 +214,7 @@ func (admin *Admin) AddResource(value interface{}, config ...*Config) *Resource 
 		res.Action(&Action{
 			Name:   "Delete",
 			Method: "DELETE",
-			URL: func(record interface{}, context *Context) string {
+			URL: func(record any, context *Context) string {
 				return context.URLFor(record, res)
 			},
 			Permission: res.Config.Permission,
@@ -262,7 +262,7 @@ func (admin *Admin) AddSearchResource(resources ...*Resource) {
 }
 
 // T call i18n backend to translate
-func (admin *Admin) T(context *qor.Context, key string, value string, values ...interface{}) template.HTML {
+func (admin *Admin) T(context *qor.Context, key string, value string, values ...any) template.HTML {
 	locale := utils.GetLocale(context)
 
 	if admin.I18n == nil {

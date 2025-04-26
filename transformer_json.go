@@ -40,7 +40,7 @@ func (JSONTransformer) Encode(writer io.Writer, encoder Encoder) error {
 	return err
 }
 
-func convertObjectToJSONMap(res *Resource, context *Context, value interface{}, kind string) interface{} {
+func convertObjectToJSONMap(res *Resource, context *Context, value any, kind string) any {
 	reflectValue := reflect.ValueOf(value)
 	for reflectValue.Kind() == reflect.Ptr {
 		reflectValue = reflectValue.Elem()
@@ -48,7 +48,7 @@ func convertObjectToJSONMap(res *Resource, context *Context, value interface{}, 
 
 	switch reflectValue.Kind() {
 	case reflect.Slice:
-		values := []interface{}{}
+		values := []any{}
 		for i := 0; i < reflectValue.Len(); i++ {
 			if reflect.Indirect(reflectValue.Index(i)).Kind() == reflect.Struct {
 				if reflectValue.Index(i).Kind() == reflect.Ptr {
@@ -71,7 +71,7 @@ func convertObjectToJSONMap(res *Resource, context *Context, value interface{}, 
 			metas = res.ConvertSectionToMetas(res.allowedSections(res.ShowAttrs(), context, roles.Read))
 		}
 
-		values := map[string]interface{}{}
+		values := map[string]any{}
 		for _, meta := range metas {
 			if meta.HasPermission(roles.Read, context.Context) {
 				// has_one, has_many checker to avoid dead loop

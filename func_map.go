@@ -50,13 +50,13 @@ func (context *Context) FuncMap() template.FuncMap {
 		"unsafe_raw": func(str string) template.HTML { return template.HTML(str) },
 		"equal":      equal,
 		"stringify":  utils.Stringify,
-		"lower": func(value interface{}) string {
+		"lower": func(value any) string {
 			return strings.ToLower(fmt.Sprint(value))
 		},
-		"plural": func(value interface{}) string {
+		"plural": func(value any) string {
 			return inflection.Plural(fmt.Sprint(value))
 		},
-		"singular": func(value interface{}) string {
+		"singular": func(value any) string {
 			return inflection.Singular(fmt.Sprint(value))
 		},
 		"get_icon": func(m *menu) string {
@@ -65,7 +65,7 @@ func (context *Context) FuncMap() template.FuncMap {
 			}
 			return m.Name
 		},
-		"marshal": func(v interface{}) template.JS {
+		"marshal": func(v any) template.JS {
 			switch value := v.(type) {
 			case string:
 				return template.JS(value)
@@ -77,8 +77,8 @@ func (context *Context) FuncMap() template.FuncMap {
 			}
 		},
 
-		"to_map": func(values ...interface{}) map[string]interface{} {
-			results := map[string]interface{}{}
+		"to_map": func(values ...any) map[string]any {
+			results := map[string]any{}
 			for i := 0; i < len(values)-1; i += 2 {
 				results[fmt.Sprint(values[i])] = values[i+1]
 			}
@@ -88,7 +88,7 @@ func (context *Context) FuncMap() template.FuncMap {
 		"render_text": context.renderText,
 		"render_with": context.renderWith,
 		"render_form": context.renderForm,
-		"render_meta": func(value interface{}, meta *Meta, types ...string) template.HTML {
+		"render_meta": func(value any, meta *Meta, types ...string) template.HTML {
 			var (
 				result = bytes.NewBufferString("")
 				typ    = "index"
@@ -106,7 +106,7 @@ func (context *Context) FuncMap() template.FuncMap {
 		"has_filter": func() bool {
 			query := context.Request.URL.Query()
 			for key := range query {
-				if regexp.MustCompile("filter[(\\w+)]").MatchString(key) && query.Get(key) != "" {
+				if regexp.MustCompile(`filter[(\w+)]`).MatchString(key) && query.Get(key) != "" {
 					return true
 				}
 			}
@@ -189,7 +189,7 @@ func (context *Context) FuncMap() template.FuncMap {
 }
 
 // NewResourceContext new context with resource
-func (context *Context) NewResourceContext(name ...interface{}) *Context {
+func (context *Context) NewResourceContext(name ...any) *Context {
 	clone := &Context{Context: context.Context.Clone(), Admin: context.Admin, Result: context.Result, Action: context.Action}
 	if len(name) > 0 {
 		if str, ok := name[0].(string); ok {
@@ -204,10 +204,11 @@ func (context *Context) NewResourceContext(name ...interface{}) *Context {
 }
 
 // URLFor generate url for resource value
-//     context.URLFor(&Product{})
-//     context.URLFor(&Product{ID: 111})
-//     context.URLFor(productResource)
-func (context *Context) URLFor(value interface{}, resources ...*Resource) string {
+//
+//	context.URLFor(&Product{})
+//	context.URLFor(&Product{ID: 111})
+//	context.URLFor(productResource)
+func (context *Context) URLFor(value any, resources ...*Resource) string {
 	getPrefix := func(res *Resource) string {
 		var params string
 		for res.ParentResource != nil {
@@ -279,12 +280,12 @@ func (context *Context) URLFor(value interface{}, resources ...*Resource) string
 }
 
 // RawValueOf return raw value of a meta for current resource
-func (context *Context) RawValueOf(value interface{}, meta *Meta) interface{} {
+func (context *Context) RawValueOf(value any, meta *Meta) any {
 	return context.valueOf(meta.GetValuer(), value, meta)
 }
 
 // FormattedValueOf return formatted value of a meta for current resource
-func (context *Context) FormattedValueOf(value interface{}, meta *Meta) interface{} {
+func (context *Context) FormattedValueOf(value any, meta *Meta) any {
 	result := context.valueOf(meta.GetFormattedValuer(), value, meta)
 	if resultValuer, ok := result.(driver.Valuer); ok {
 		if result, err := resultValuer.Value(); err == nil {
@@ -378,7 +379,7 @@ func (context *Context) Pagination() *PaginationResult {
 	return &PaginationResult{Pagination: pagination, Pages: pages}
 }
 
-func (context *Context) primaryKeyOf(value interface{}) interface{} {
+func (context *Context) primaryKeyOf(value any) any {
 	if reflect.Indirect(reflect.ValueOf(value)).Kind() == reflect.Struct {
 		obj := reflect.Indirect(reflect.ValueOf(value))
 
@@ -395,7 +396,7 @@ func (context *Context) primaryKeyOf(value interface{}) interface{} {
 	return fmt.Sprint(value)
 }
 
-func (context *Context) uniqueKeyOf(value interface{}) interface{} {
+func (context *Context) uniqueKeyOf(value any) any {
 	if reflect.Indirect(reflect.ValueOf(value)).Kind() == reflect.Struct {
 		scope := &gorm.Scope{Value: value}
 		var primaryValues []string
@@ -408,7 +409,7 @@ func (context *Context) uniqueKeyOf(value interface{}) interface{} {
 	return fmt.Sprint(value)
 }
 
-func (context *Context) isNewRecord(value interface{}) bool {
+func (context *Context) isNewRecord(value any) bool {
 	if value == nil {
 		return true
 	}
@@ -419,7 +420,7 @@ func (context *Context) newResourcePath(res *Resource) string {
 	return path.Join(context.URLFor(res), "new")
 }
 
-func (context *Context) linkTo(text interface{}, link interface{}) template.HTML {
+func (context *Context) linkTo(text any, link any) template.HTML {
 	text = reflect.Indirect(reflect.ValueOf(text)).Interface()
 	if linkStr, ok := link.(string); ok {
 		return template.HTML(fmt.Sprintf(`<a href="%v">%v</a>`, linkStr, text))
@@ -427,7 +428,7 @@ func (context *Context) linkTo(text interface{}, link interface{}) template.HTML
 	return template.HTML(fmt.Sprintf(`<a href="%v">%v</a>`, context.URLFor(link), text))
 }
 
-func (context *Context) valueOf(valuer func(interface{}, *qor.Context) interface{}, value interface{}, meta *Meta) interface{} {
+func (context *Context) valueOf(valuer func(any, *qor.Context) any, value any, meta *Meta) any {
 	if valuer != nil {
 		reflectValue := reflect.ValueOf(value)
 		if reflectValue.Kind() != reflect.Ptr {
@@ -464,13 +465,13 @@ func (context *Context) valueOf(valuer func(interface{}, *qor.Context) interface
 	return nil
 }
 
-func (context *Context) renderForm(value interface{}, sections []*Section) template.HTML {
+func (context *Context) renderForm(value any, sections []*Section) template.HTML {
 	var result = bytes.NewBufferString("")
 	context.renderSections(value, sections, []string{"QorResource"}, result, "form")
 	return template.HTML(result.String())
 }
 
-func (context *Context) renderSections(value interface{}, sections []*Section, prefix []string, writer *bytes.Buffer, kind string) {
+func (context *Context) renderSections(value any, sections []*Section, prefix []string, writer *bytes.Buffer, kind string) {
 	for _, section := range sections {
 		var rows []struct {
 			Length      int
@@ -491,12 +492,12 @@ func (context *Context) renderSections(value interface{}, sections []*Section, p
 				ColumnsHTML template.HTML
 			}{
 				Length:      len(column),
-				ColumnsHTML: template.HTML(string(columnsHTML.Bytes())),
+				ColumnsHTML: template.HTML(columnsHTML.String()),
 			})
 		}
 
 		if len(rows) > 0 {
-			var data = map[string]interface{}{
+			var data = map[string]any{
 				"Section": section,
 				"Title":   template.HTML(section.Title),
 				"Rows":    rows,
@@ -528,7 +529,7 @@ func (context *Context) renderFilter(filter *Filter) template.HTML {
 	if content, err = context.Asset(fmt.Sprintf("metas/filter/%v.tmpl", filter.Type)); err == nil {
 		tmpl := template.New(filter.Type + ".tmpl").Funcs(context.FuncMap())
 		if tmpl, err = tmpl.Parse(string(content)); err == nil {
-			var data = map[string]interface{}{
+			var data = map[string]any{
 				"Filter":          filter,
 				"Label":           filter.Label,
 				"InputNamePrefix": fmt.Sprintf("filters[%v]", filter.Name),
@@ -552,15 +553,15 @@ func (context *Context) savedFilters() (filters []SavedFilter) {
 	return
 }
 
-func (context *Context) renderMeta(meta *Meta, value interface{}, prefix []string, metaType string, writer *bytes.Buffer) {
+func (context *Context) renderMeta(meta *Meta, value any, prefix []string, metaType string, writer *bytes.Buffer) {
 	var (
 		err      error
 		funcsMap = context.FuncMap()
 	)
 	prefix = append(prefix, meta.Name)
 
-	var generateNestedRenderSections = func(kind string) func(interface{}, []*Section, int) template.HTML {
-		return func(value interface{}, sections []*Section, index int) template.HTML {
+	var generateNestedRenderSections = func(kind string) func(any, []*Section, int) template.HTML {
+		return func(value any, sections []*Section, index int) template.HTML {
 			var result = bytes.NewBufferString("")
 			var newPrefix = append([]string{}, prefix...)
 
@@ -626,7 +627,7 @@ func (context *Context) renderMeta(meta *Meta, value interface{}, prefix []strin
 
 	if err == nil {
 		var scope = context.GetDB().NewScope(value)
-		var data = map[string]interface{}{
+		var data = map[string]any{
 			"Context":       context,
 			"BaseResource":  meta.baseResource,
 			"Meta":          meta,
@@ -643,7 +644,7 @@ func (context *Context) renderMeta(meta *Meta, value interface{}, prefix []strin
 		data["CollectionValue"] = func() [][]string {
 			fmt.Printf("%v: Call .CollectionValue from views already Deprecated, get the value with `.Meta.Config.GetCollection .ResourceValue .Context`", meta.Name)
 			return meta.Config.(interface {
-				GetCollection(value interface{}, context *Context) [][]string
+				GetCollection(value any, context *Context) [][]string
 			}).GetCollection(value, context)
 		}
 
@@ -658,7 +659,7 @@ func (context *Context) renderMeta(meta *Meta, value interface{}, prefix []strin
 }
 
 // isEqual export for test only. If values are struct, compare their primary key. otherwise treat them as string
-func (context *Context) isEqual(value interface{}, comparativeValue interface{}) bool {
+func (context *Context) isEqual(value any, comparativeValue any) bool {
 	var result string
 
 	if (value == nil || comparativeValue == nil) && (value != comparativeValue) {
@@ -683,7 +684,7 @@ func (context *Context) isEqual(value interface{}, comparativeValue interface{})
 	}
 }
 
-func (context *Context) isIncluded(value interface{}, hasValue interface{}) bool {
+func (context *Context) isIncluded(value any, hasValue any) bool {
 	var result string
 	if reflect.Indirect(reflect.ValueOf(hasValue)).Kind() == reflect.Struct {
 		scope := &gorm.Scope{Value: hasValue}
@@ -692,7 +693,7 @@ func (context *Context) isIncluded(value interface{}, hasValue interface{}) bool
 		result = fmt.Sprint(hasValue)
 	}
 
-	primaryKeys := []interface{}{}
+	primaryKeys := []any{}
 	reflectValue := reflect.Indirect(reflect.ValueOf(value))
 
 	if reflectValue.Kind() == reflect.Slice {
@@ -895,22 +896,22 @@ func (context *Context) hasChangePermission(permissioner HasPermissioner) bool {
 }
 
 // PatchCurrentURL is a convinent wrapper for qor/utils.PatchURL
-func (context *Context) patchCurrentURL(params ...interface{}) (patchedURL string, err error) {
+func (context *Context) patchCurrentURL(params ...any) (patchedURL string, err error) {
 	return utils.PatchURL(context.Request.URL.String(), params...)
 }
 
 // PatchURL is a convinent wrapper for qor/utils.PatchURL
-func (context *Context) patchURL(url string, params ...interface{}) (patchedURL string, err error) {
+func (context *Context) patchURL(url string, params ...any) (patchedURL string, err error) {
 	return utils.PatchURL(url, params...)
 }
 
 // JoinCurrentURL is a convinent wrapper for qor/utils.JoinURL
-func (context *Context) joinCurrentURL(params ...interface{}) (joinedURL string, err error) {
+func (context *Context) joinCurrentURL(params ...any) (joinedURL string, err error) {
 	return utils.JoinURL(context.Request.URL.String(), params...)
 }
 
 // JoinURL is a convinent wrapper for qor/utils.JoinURL
-func (context *Context) joinURL(url string, params ...interface{}) (joinedURL string, err error) {
+func (context *Context) joinURL(url string, params ...any) (joinedURL string, err error) {
 	return utils.JoinURL(url, params...)
 }
 
@@ -1062,7 +1063,7 @@ func (context *Context) loadActions(action string) template.HTML {
 
 	// before files have higher priority
 	for _, actionFile := range actionFiles {
-		base := regexp.MustCompile("^\\d+\\.").ReplaceAllString(path.Base(actionFile), "")
+		base := regexp.MustCompile(`^\d+\.`).ReplaceAllString(path.Base(actionFile), "")
 
 		if _, ok := actions[base]; !ok {
 			actionKeys = append(actionKeys, path.Base(actionFile))
@@ -1082,7 +1083,7 @@ func (context *Context) loadActions(action string) template.HTML {
 			}
 		}()
 
-		base := regexp.MustCompile("^\\d+\\.").ReplaceAllString(key, "")
+		base := regexp.MustCompile(`^\d+\.`).ReplaceAllString(key, "")
 		if content, err := context.Asset(actions[base]); err == nil {
 			if tmpl, err := template.New(filepath.Base(actions[base])).Funcs(context.FuncMap()).Parse(string(content)); err == nil {
 				if err := tmpl.Execute(result, context); err != nil {
@@ -1106,7 +1107,7 @@ func (context *Context) logoutURL() string {
 	return ""
 }
 
-func (context *Context) t(values ...interface{}) template.HTML {
+func (context *Context) t(values ...any) template.HTML {
 	switch len(values) {
 	case 1:
 		return context.Admin.T(context.Context, fmt.Sprint(values[0]), fmt.Sprint(values[0]))
@@ -1163,7 +1164,7 @@ func (context *Context) getFormattedErrors() (formatedErrors []formatedError) {
 }
 
 // AllowedActions return allowed actions based on context
-func (context *Context) AllowedActions(actions []*Action, mode string, records ...interface{}) []*Action {
+func (context *Context) AllowedActions(actions []*Action, mode string, records ...any) []*Action {
 	var allowedActions []*Action
 	for _, action := range actions {
 		for _, m := range action.Modes {

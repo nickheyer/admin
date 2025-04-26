@@ -10,7 +10,7 @@ import (
 type CollectionEditConfig struct {
 	Template string
 	Max      uint
-	metaConfig
+	_        metaConfig
 }
 
 // GetTemplate get template for collection edit

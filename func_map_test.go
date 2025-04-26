@@ -36,11 +36,11 @@ func TestFuncMaps(t *testing.T) {
 		result := funcMaps["raw"].((func(string) template.HTML))(testcase.HTML)
 		var hasError bool
 		if result != template.HTML(testcase.ExpectResult) {
-			t.Errorf(color.RedString(fmt.Sprintf("Admin FuncMap raw #%v: expect get %v, but got '%v'", i+1, testcase.ExpectResult, result)))
+			t.Error(color.RedString(fmt.Sprintf("Admin FuncMap raw #%v: expect get %v, but got '%v'", i+1, testcase.ExpectResult, result)))
 			hasError = true
 		}
 		if !hasError {
-			fmt.Printf(color.GreenString(fmt.Sprintf("Admin FuncMap raw #%v: Success\n", i+1)))
+			fmt.Print(color.GreenString(fmt.Sprintf("Admin FuncMap raw #%v: Success\n", i+1)))
 		}
 	}
 
@@ -48,11 +48,11 @@ func TestFuncMaps(t *testing.T) {
 		result := funcMaps["unsafe_raw"].((func(string) template.HTML))(testcase.HTML)
 		var hasError bool
 		if result != template.HTML(testcase.ExpectResult) {
-			t.Errorf(color.RedString(fmt.Sprintf("Admin FuncMap unsafe_raw #%v: expect get %v, but got '%v'", i+1, testcase.ExpectResult, result)))
+			t.Error(color.RedString(fmt.Sprintf("Admin FuncMap unsafe_raw #%v: expect get %v, but got '%v'", i+1, testcase.ExpectResult, result)))
 			hasError = true
 		}
 		if !hasError {
-			fmt.Printf(color.GreenString(fmt.Sprintf("Admin FuncMap unsafe_raw #%v: Success\n", i+1)))
+			fmt.Print(color.GreenString(fmt.Sprintf("Admin FuncMap unsafe_raw #%v: Success\n", i+1)))
 		}
 	}
 }

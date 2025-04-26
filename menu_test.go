@@ -6,10 +6,6 @@ import (
 	"github.com/qor/qor"
 )
 
-func generateResourceMenu(resource *Resource) *Menu {
-	return &Menu{RelativePath: resource.ToParam(), Name: resource.Name}
-}
-
 func TestMenu(t *testing.T) {
 	admin := New(&qor.Config{})
 	admin.router.Prefix = "/admin"

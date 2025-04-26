@@ -30,7 +30,7 @@ func TestCreateRecord(t *testing.T) {
 			t.Errorf("User should be created successfully")
 		}
 	} else {
-		t.Errorf(err.Error())
+		t.Error(err.Error())
 	}
 }
 
@@ -57,7 +57,7 @@ func TestCreateBelongsToRecord(t *testing.T) {
 			t.Errorf("Embedded struct should be created successfully")
 		}
 	} else {
-		t.Errorf(err.Error())
+		t.Error(err.Error())
 	}
 }
 
@@ -95,7 +95,7 @@ func TestCreateHasManyRecord(t *testing.T) {
 			t.Errorf("Blank address should not be created")
 		}
 	} else {
-		t.Errorf(err.Error())
+		t.Error(err.Error())
 	}
 }
 
@@ -146,7 +146,7 @@ func TestCreateHasManyRecordWithOrder(t *testing.T) {
 			t.Errorf("There should be only %v addresses created", 4)
 		}
 	} else {
-		t.Errorf(err.Error())
+		t.Error(err.Error())
 	}
 }
 
@@ -180,7 +180,7 @@ func TestCreateManyToManyRecord(t *testing.T) {
 			t.Errorf("User should have two languages after create")
 		}
 	} else {
-		t.Errorf(err.Error())
+		t.Error(err.Error())
 	}
 }
 

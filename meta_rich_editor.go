@@ -11,7 +11,7 @@ type RichEditorConfig struct {
 	AssetManager         *Resource
 	DisableHTMLSanitizer bool
 	Plugins              []RedactorPlugin
-	Settings             map[string]interface{}
+	Settings             map[string]any
 	metaConfig
 }
 
@@ -34,14 +34,14 @@ func (richEditorConfig *RichEditorConfig) ConfigureQorMeta(metaor resource.Metao
 
 		if !richEditorConfig.DisableHTMLSanitizer {
 			setter := meta.GetSetter()
-			meta.SetSetter(func(resource interface{}, metaValue *resource.MetaValue, context *qor.Context) {
+			meta.SetSetter(func(resource any, metaValue *resource.MetaValue, context *qor.Context) {
 				metaValue.Value = utils.HTMLSanitizer.Sanitize(utils.ToString(metaValue.Value))
 				setter(resource, metaValue, context)
 			})
 		}
 
 		if richEditorConfig.Settings == nil {
-			richEditorConfig.Settings = map[string]interface{}{}
+			richEditorConfig.Settings = map[string]any{}
 		}
 
 		plugins := []string{"source"}

@@ -40,7 +40,7 @@ func TestUpdateRecord(t *testing.T) {
 			t.Errorf("User should be updated successfully")
 		}
 	} else {
-		t.Errorf(err.Error())
+		t.Error(err.Error())
 	}
 }
 
@@ -53,7 +53,7 @@ func TestUpdateRecordWithRollback(t *testing.T) {
 	userR := Admin.GetResource("User")
 	userR.AddProcessor(&resource.Processor{
 		Name: "product-admin-prroduct-res-processor",
-		Handler: func(v interface{}, meta *resource.MetaValues, c *qor.Context) error {
+		Handler: func(v any, meta *resource.MetaValues, c *qor.Context) error {
 			user := v.(*User)
 			c.DB.Model(user).Association("Languages").Replace([]Language{{Name: "CN"}})
 			return nil
@@ -90,7 +90,7 @@ func TestUpdateRecordWithRollback(t *testing.T) {
 			t.Errorf("Should keep origin value for languages, but got %v", strings.Join(languages, ","))
 		}
 	} else {
-		t.Errorf(err.Error())
+		t.Error(err.Error())
 	}
 }
 
@@ -128,7 +128,7 @@ func TestUpdateHasOneRecord(t *testing.T) {
 			t.Errorf("Old embedded struct should be updated")
 		}
 	} else {
-		t.Errorf(err.Error())
+		t.Error(err.Error())
 	}
 }
 
@@ -181,7 +181,7 @@ func TestUpdateHasManyRecord(t *testing.T) {
 			t.Errorf("Addresses's count should be updated after update")
 		}
 	} else {
-		t.Errorf(err.Error())
+		t.Error(err.Error())
 	}
 }
 
@@ -215,7 +215,7 @@ func TestDestroyEmbeddedHasOneRecord(t *testing.T) {
 			t.Errorf("Embedded struct should be destroyed successfully")
 		}
 	} else {
-		t.Errorf(err.Error())
+		t.Error(err.Error())
 	}
 }
 
@@ -254,7 +254,7 @@ func TestUpdateManyToManyRecord(t *testing.T) {
 			t.Errorf("User should have one languages after update")
 		}
 	} else {
-		t.Errorf(err.Error())
+		t.Error(err.Error())
 	}
 }
 
@@ -293,7 +293,7 @@ func TestUpdateSelectOne(t *testing.T) {
 			t.Errorf("user's company should be updated")
 		}
 	} else {
-		t.Errorf(err.Error())
+		t.Error(err.Error())
 	}
 }
 

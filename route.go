@@ -17,14 +17,16 @@ import (
 )
 
 // Middleware is a way to filter a request and response coming into your application
-// Register new middleware with `admin.GetRouter().Use(Middleware{
-//   Name: "middleware name", // use middleware with same name will overwrite old one
-//   Handler: func(*Context, *Middleware) {
-//     // do something
-//     // run next middleware
-//     middleware.Next(context)
-//   },
-// })`
+//
+//	Register new middleware with `admin.GetRouter().Use(Middleware{
+//	  Name: "middleware name", // use middleware with same name will overwrite old one
+//	  Handler: func(*Context, *Middleware) {
+//	    // do something
+//	    // run next middleware
+//	    middleware.Next(context)
+//	  },
+//	})`
+//
 // It will be called in order, it need to be registered before `admin.MountTo`
 type Middleware struct {
 	Name    string
@@ -131,7 +133,7 @@ func (r *Router) Delete(path string, handle requestHandler, config ...*RouteConf
 	r.sortRoutes(r.routers["DELETE"])
 }
 
-var wildcardRouter = regexp.MustCompile("/:\\w+")
+var wildcardRouter = regexp.MustCompile(`/:\w+`)
 
 func (r *Router) sortRoutes(routes []*routeHandler) {
 	sort.SliceStable(routes, func(i, j int) bool {
@@ -237,7 +239,7 @@ func (serveMux *serveMux) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	defer func() func() {
 		begin := time.Now()
 		return func() {
-			log.Printf("Finish [%s] %s Took %.2fms\n", req.Method, req.RequestURI, time.Now().Sub(begin).Seconds()*1000)
+			log.Printf("Finish [%s] %s Took %.2fms\n", req.Method, req.RequestURI, time.Since(begin).Seconds()*1000)
 		}
 	}()()
 

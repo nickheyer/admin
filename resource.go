@@ -36,13 +36,13 @@ type Resource struct {
 	ParentResource *Resource
 	SearchHandler  func(keyword string, context *qor.Context) *gorm.DB
 
-	params  string
-	admin   *Admin
-	metas   []*Meta
-	actions []*Action
-	scopes  []*Scope
-	filters []*Filter
-	mounted bool
+	params   string
+	admin    *Admin
+	metas    []*Meta
+	actions  []*Action
+	scopes   []*Scope
+	filters  []*Filter
+	mounted  bool
 	sections struct {
 		IndexSections                  []*Section
 		OverriddingIndexAttrs          bool
@@ -74,7 +74,7 @@ func (res *Resource) ToParam() string {
 		}); ok {
 			res.params = value.ToParam()
 		} else {
-			if res.Config.Singleton == true {
+			if res.Config.Singleton {
 				res.params = utils.ToParamString(res.Name)
 			} else {
 				res.params = utils.ToParamString(inflection.Plural(res.Name))
@@ -108,7 +108,7 @@ func (res Resource) GetPrimaryValue(request *http.Request) string {
 }
 
 // UseTheme use them for resource, will auto load the theme's javascripts, stylesheets for this resource
-func (res *Resource) UseTheme(theme interface{}) []ThemeInterface {
+func (res *Resource) UseTheme(theme any) []ThemeInterface {
 	var themeInterface ThemeInterface
 	if ti, ok := theme.(ThemeInterface); ok {
 		themeInterface = ti
@@ -145,7 +145,7 @@ func (res *Resource) GetTheme(name string) ThemeInterface {
 }
 
 // NewResource initialize a new qor resource, won't add it to admin, just initialize it
-func (res *Resource) NewResource(value interface{}, config ...*Config) *Resource {
+func (res *Resource) NewResource(value any, config ...*Config) *Resource {
 	subRes := res.GetAdmin().newResource(value, config...)
 	subRes.ParentResource = res
 	subRes.configure()
@@ -167,7 +167,7 @@ func (res *Resource) AddSubResource(fieldName string, config ...*Config) (subRes
 		subRes.Action(&Action{
 			Name:   "Delete",
 			Method: "DELETE",
-			URL: func(record interface{}, context *Context) string {
+			URL: func(record any, context *Context) string {
 				return context.URLFor(record, subRes)
 			},
 			Permission: subRes.Config.Permission,
@@ -185,7 +185,7 @@ func (res *Resource) AddSubResource(fieldName string, config ...*Config) (subRes
 func (res *Resource) setupParentResource(fieldName string, parent *Resource) {
 	res.ParentResource = parent
 
-	var findParent = func(context *qor.Context) (interface{}, error) {
+	var findParent = func(context *qor.Context) (any, error) {
 		clone := context.Clone()
 		clone.ResourceID = parent.GetPrimaryValue(context.Request)
 		parentValue := parent.NewStruct()
@@ -194,13 +194,14 @@ func (res *Resource) setupParentResource(fieldName string, parent *Resource) {
 	}
 
 	findOneHandler := res.FindOneHandler
-	res.FindOneHandler = func(value interface{}, metaValues *resource.MetaValues, context *qor.Context) (err error) {
+	res.FindOneHandler = func(value any, metaValues *resource.MetaValues, context *qor.Context) (err error) {
 		if metaValues != nil {
 			return findOneHandler(value, metaValues, context)
 		}
 
 		if primaryKey := res.GetPrimaryValue(context.Request); primaryKey != "" {
-			parentValue := parent.NewStruct()
+			var parentValue any
+			parent.NewStruct()
 			if parentValue, err = findParent(context); err == nil {
 				primaryQuerySQL, primaryParams := res.ToPrimaryQueryParams(primaryKey, context)
 				result := context.GetDB().Model(parentValue).Where(primaryQuerySQL, primaryParams...).Related(value)
@@ -218,8 +219,9 @@ func (res *Resource) setupParentResource(fieldName string, parent *Resource) {
 		return
 	}
 
-	res.FindManyHandler = func(value interface{}, context *qor.Context) (err error) {
-		parentValue := parent.NewStruct()
+	res.FindManyHandler = func(value any, context *qor.Context) (err error) {
+		var parentValue any
+		parent.NewStruct()
 		if parentValue, err = findParent(context); err == nil {
 			if _, ok := context.GetDB().Get("qor:getting_total_count"); ok {
 				*(value.(*int)) = context.GetDB().Model(parentValue).Association(fieldName).Count()
@@ -230,19 +232,21 @@ func (res *Resource) setupParentResource(fieldName string, parent *Resource) {
 		return err
 	}
 
-	res.SaveHandler = func(value interface{}, context *qor.Context) (err error) {
-		parentValue := parent.NewStruct()
+	res.SaveHandler = func(value any, context *qor.Context) (err error) {
+		var parentValue any
+		parent.NewStruct()
 		if parentValue, err = findParent(context); err == nil {
 			return context.GetDB().Model(parentValue).Association(fieldName).Append(value).Error
 		}
 		return err
 	}
 
-	res.DeleteHandler = func(value interface{}, context *qor.Context) (err error) {
+	res.DeleteHandler = func(value any, context *qor.Context) (err error) {
 		if primaryKey := res.GetPrimaryValue(context.Request); primaryKey != "" {
 			primaryQuerySQL, primaryParams := res.ToPrimaryQueryParams(primaryKey, context)
 			if err = context.GetDB().Where(primaryQuerySQL, primaryParams...).First(value).Error; err == nil {
-				parentValue := parent.NewStruct()
+				var parentValue any
+				parent.NewStruct()
 				if parentValue, err = findParent(context); err == nil {
 					return context.GetDB().Model(parentValue).Association(fieldName).Delete(value).Error
 				}
@@ -253,7 +257,7 @@ func (res *Resource) setupParentResource(fieldName string, parent *Resource) {
 }
 
 // Decode decode context into a value
-func (res *Resource) Decode(context *qor.Context, value interface{}) error {
+func (res *Resource) Decode(context *qor.Context, value any) error {
 	return resource.Decode(context, value, res)
 }
 
@@ -308,31 +312,13 @@ MetaIncluded:
 	return attrs
 }
 
-func (res *Resource) getAttrs(attrs []string) []string {
-	if len(attrs) == 0 {
-		return res.allAttrs()
-	}
-
-	var onlyExcludeAttrs = true
-	for _, attr := range attrs {
-		if !strings.HasPrefix(attr, "-") {
-			onlyExcludeAttrs = false
-			break
-		}
-	}
-
-	if onlyExcludeAttrs {
-		return append(res.allAttrs(), attrs...)
-	}
-	return attrs
-}
-
 // IndexAttrs set attributes will be shown in the index page
-//     // show given attributes in the index page
-//     order.IndexAttrs("User", "PaymentAmount", "ShippedAt", "CancelledAt", "State", "ShippingAddress")
-//     // show all attributes except `State` in the index page
-//     order.IndexAttrs("-State")
-func (res *Resource) IndexAttrs(values ...interface{}) []*Section {
+//
+//	// show given attributes in the index page
+//	order.IndexAttrs("User", "PaymentAmount", "ShippedAt", "CancelledAt", "State", "ShippingAddress")
+//	// show all attributes except `State` in the index page
+//	order.IndexAttrs("-State")
+func (res *Resource) IndexAttrs(values ...any) []*Section {
 	overriddingIndexAttrs := res.sections.OverriddingIndexAttrs
 	res.sections.OverriddingIndexAttrs = true
 
@@ -364,27 +350,28 @@ func (res *Resource) OverrideIndexAttrs(fc func()) {
 }
 
 // NewAttrs set attributes will be shown in the new page
-//     // show given attributes in the new page
-//     order.NewAttrs("User", "PaymentAmount", "ShippedAt", "CancelledAt", "State", "ShippingAddress")
-//     // show all attributes except `State` in the new page
-//     order.NewAttrs("-State")
-//  You could also use `Section` to structure form to make it tidy and clean
-//     product.NewAttrs(
-//       &admin.Section{
-//       	Title: "Basic Information",
-//       	Rows: [][]string{
-//       		{"Name"},
-//       		{"Code", "Price"},
-//       	}},
-//       &admin.Section{
-//       	Title: "Organization",
-//       	Rows: [][]string{
-//       		{"Category", "Collections", "MadeCountry"},
-//       	}},
-//       "Description",
-//       "ColorVariations",
-//     }
-func (res *Resource) NewAttrs(values ...interface{}) []*Section {
+//
+//	   // show given attributes in the new page
+//	   order.NewAttrs("User", "PaymentAmount", "ShippedAt", "CancelledAt", "State", "ShippingAddress")
+//	   // show all attributes except `State` in the new page
+//	   order.NewAttrs("-State")
+//	You could also use `Section` to structure form to make it tidy and clean
+//	   product.NewAttrs(
+//	     &admin.Section{
+//	     	Title: "Basic Information",
+//	     	Rows: [][]string{
+//	     		{"Name"},
+//	     		{"Code", "Price"},
+//	     	}},
+//	     &admin.Section{
+//	     	Title: "Organization",
+//	     	Rows: [][]string{
+//	     		{"Category", "Collections", "MadeCountry"},
+//	     	}},
+//	     "Description",
+//	     "ColorVariations",
+//	   }
+func (res *Resource) NewAttrs(values ...any) []*Section {
 	overriddingNewAttrs := res.sections.OverriddingNewAttrs
 	res.sections.OverriddingNewAttrs = true
 
@@ -415,27 +402,28 @@ func (res *Resource) OverrideNewAttrs(fc func()) {
 }
 
 // EditAttrs set attributes will be shown in the edit page
-//     // show given attributes in the new page
-//     order.EditAttrs("User", "PaymentAmount", "ShippedAt", "CancelledAt", "State", "ShippingAddress")
-//     // show all attributes except `State` in the edit page
-//     order.EditAttrs("-State")
-//  You could also use `Section` to structure form to make it tidy and clean
-//     product.EditAttrs(
-//       &admin.Section{
-//       	Title: "Basic Information",
-//       	Rows: [][]string{
-//       		{"Name"},
-//       		{"Code", "Price"},
-//       	}},
-//       &admin.Section{
-//       	Title: "Organization",
-//       	Rows: [][]string{
-//       		{"Category", "Collections", "MadeCountry"},
-//       	}},
-//       "Description",
-//       "ColorVariations",
-//     }
-func (res *Resource) EditAttrs(values ...interface{}) []*Section {
+//
+//	   // show given attributes in the new page
+//	   order.EditAttrs("User", "PaymentAmount", "ShippedAt", "CancelledAt", "State", "ShippingAddress")
+//	   // show all attributes except `State` in the edit page
+//	   order.EditAttrs("-State")
+//	You could also use `Section` to structure form to make it tidy and clean
+//	   product.EditAttrs(
+//	     &admin.Section{
+//	     	Title: "Basic Information",
+//	     	Rows: [][]string{
+//	     		{"Name"},
+//	     		{"Code", "Price"},
+//	     	}},
+//	     &admin.Section{
+//	     	Title: "Organization",
+//	     	Rows: [][]string{
+//	     		{"Category", "Collections", "MadeCountry"},
+//	     	}},
+//	     "Description",
+//	     "ColorVariations",
+//	   }
+func (res *Resource) EditAttrs(values ...any) []*Section {
 	overriddingEditAttrs := res.sections.OverriddingEditAttrs
 	res.sections.OverriddingEditAttrs = true
 
@@ -466,27 +454,28 @@ func (res *Resource) OverrideEditAttrs(fc func()) {
 }
 
 // ShowAttrs set attributes will be shown in the show page
-//     // show given attributes in the show page
-//     order.ShowAttrs("User", "PaymentAmount", "ShippedAt", "CancelledAt", "State", "ShippingAddress")
-//     // show all attributes except `State` in the show page
-//     order.ShowAttrs("-State")
-//  You could also use `Section` to structure form to make it tidy and clean
-//     product.ShowAttrs(
-//       &admin.Section{
-//       	Title: "Basic Information",
-//       	Rows: [][]string{
-//       		{"Name"},
-//       		{"Code", "Price"},
-//       	}},
-//       &admin.Section{
-//       	Title: "Organization",
-//       	Rows: [][]string{
-//       		{"Category", "Collections", "MadeCountry"},
-//       	}},
-//       "Description",
-//       "ColorVariations",
-//     }
-func (res *Resource) ShowAttrs(values ...interface{}) []*Section {
+//
+//	   // show given attributes in the show page
+//	   order.ShowAttrs("User", "PaymentAmount", "ShippedAt", "CancelledAt", "State", "ShippingAddress")
+//	   // show all attributes except `State` in the show page
+//	   order.ShowAttrs("-State")
+//	You could also use `Section` to structure form to make it tidy and clean
+//	   product.ShowAttrs(
+//	     &admin.Section{
+//	     	Title: "Basic Information",
+//	     	Rows: [][]string{
+//	     		{"Name"},
+//	     		{"Code", "Price"},
+//	     	}},
+//	     &admin.Section{
+//	     	Title: "Organization",
+//	     	Rows: [][]string{
+//	     		{"Category", "Collections", "MadeCountry"},
+//	     	}},
+//	     "Description",
+//	     "ColorVariations",
+//	   }
+func (res *Resource) ShowAttrs(values ...any) []*Section {
 	overriddingShowAttrs := res.sections.OverriddingShowAttrs
 	settingShowAttrs := true
 	res.sections.OverriddingShowAttrs = true
@@ -547,8 +536,9 @@ func (res *Resource) SortableAttrs(columns ...string) []string {
 }
 
 // SearchAttrs set searchable attributes, e.g:
-//	   product.SearchAttrs("Name", "Code", "Category.Name", "Brand.Name")
-//     // Search products with its name, code, category's name, brand's name
+//
+//		   product.SearchAttrs("Name", "Code", "Category.Name", "Brand.Name")
+//	    // Search products with its name, code, category's name, brand's name
 func (res *Resource) SearchAttrs(columns ...string) []string {
 	if len(columns) != 0 || res.SearchHandler == nil {
 		if len(columns) == 0 {
@@ -727,9 +717,9 @@ func (res *Resource) allowedSections(sections []*Section, context *Context, role
 }
 
 func (res *Resource) configure() {
-	var configureModel func(value interface{})
+	var configureModel func(value any)
 
-	configureModel = func(value interface{}) {
+	configureModel = func(value any) {
 		modelType := utils.ModelType(value)
 		if modelType.Kind() == reflect.Struct {
 			for i := 0; i < modelType.NumField(); i++ {

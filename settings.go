@@ -10,8 +10,8 @@ import (
 
 // SettingsStorageInterface settings storage interface
 type SettingsStorageInterface interface {
-	Get(key string, value interface{}, context *Context) error
-	Save(key string, value interface{}, res *Resource, user qor.CurrentUser, context *Context) error
+	Get(key string, value any, context *Context) error
+	Save(key string, value any, res *Resource, user qor.CurrentUser, context *Context) error
 }
 
 func newSettings(db *gorm.DB) SettingsStorageInterface {
@@ -33,7 +33,7 @@ type QorAdminSetting struct {
 type settings struct{}
 
 // Get load admin settings
-func (settings) Get(key string, value interface{}, context *Context) error {
+func (settings) Get(key string, value any, context *Context) error {
 	var (
 		settings  = []QorAdminSetting{}
 		tx        = context.GetDB().New()
@@ -62,7 +62,7 @@ func (settings) Get(key string, value interface{}, context *Context) error {
 }
 
 // Save save admin settings
-func (settings) Save(key string, value interface{}, res *Resource, user qor.CurrentUser, context *Context) error {
+func (settings) Save(key string, value any, res *Resource, user qor.CurrentUser, context *Context) error {
 	var (
 		tx          = context.GetDB().New()
 		result, err = json.Marshal(value)

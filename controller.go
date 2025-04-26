@@ -45,7 +45,7 @@ func (ac *Controller) SearchCenter(context *Context) {
 	type Result struct {
 		Context  *Context
 		Resource *Resource
-		Results  interface{}
+		Results  any
 	}
 	var searchResults []Result
 
@@ -84,7 +84,7 @@ func (ac *Controller) Create(context *Context) {
 			context.Execute("new", result)
 		}).With([]string{"json", "xml"}, func() {
 			context.Writer.WriteHeader(HTTPUnprocessableEntity)
-			context.Encode("index", map[string]interface{}{"errors": context.GetErrors()})
+			context.Encode("index", map[string]any{"errors": context.GetErrors()})
 		}).Respond(context.Request)
 	} else {
 		responder.With("html", func() {
@@ -97,8 +97,8 @@ func (ac *Controller) Create(context *Context) {
 	}
 }
 
-func (ac *Controller) renderSingleton(context *Context) (interface{}, bool, error) {
-	var result interface{}
+func (ac *Controller) renderSingleton(context *Context) (any, bool, error) {
+	var result any
 	var err error
 
 	if context.Resource.Config.Singleton {
@@ -150,7 +150,7 @@ func (ac *Controller) Edit(context *Context) {
 
 // Update update data
 func (ac *Controller) Update(context *Context) {
-	var result interface{}
+	var result any
 	var err error
 
 	// If singleton Resource
@@ -183,7 +183,7 @@ func (ac *Controller) Update(context *Context) {
 		responder.With("html", func() {
 			context.Execute("edit", result)
 		}).With([]string{"json", "xml"}, func() {
-			context.Encode("edit", map[string]interface{}{"errors": context.GetErrors()})
+			context.Encode("edit", map[string]any{"errors": context.GetErrors()})
 		}).Respond(context.Request)
 	} else {
 		responder.With("html", func() {
@@ -209,7 +209,7 @@ func (ac *Controller) Delete(context *Context) {
 		http.Redirect(context.Writer, context.Request, path.Join(ac.GetRouter().Prefix, res.ToParam()), http.StatusFound)
 	}).With([]string{"json", "xml"}, func() {
 		context.Writer.WriteHeader(status)
-		context.Encode("OK", map[string]interface{}{"status": "ok"})
+		context.Encode("OK", map[string]any{"status": "ok"})
 	}).Respond(context.Request)
 }
 
@@ -243,7 +243,7 @@ func (ac *Controller) Action(context *Context) {
 				responder.With("html", func() {
 					http.Redirect(context.Writer, context.Request, context.Request.Referer(), http.StatusFound)
 				}).With([]string{"json", "xml"}, func() {
-					context.Encode("OK", map[string]interface{}{"message": message, "status": "ok"})
+					context.Encode("OK", map[string]any{"message": message, "status": "ok"})
 				}).Respond(context.Request)
 			} else {
 				context.Writer.WriteHeader(HTTPUnprocessableEntity)
@@ -254,7 +254,7 @@ func (ac *Controller) Action(context *Context) {
 					for _, err := range context.GetErrors() {
 						errs = append(errs, err.Error())
 					}
-					context.Encode("OK", map[string]interface{}{"errors": errs, "status": "error"})
+					context.Encode("OK", map[string]any{"errors": errs, "status": "error"})
 				}).Respond(context.Request)
 			}
 		}

@@ -38,7 +38,7 @@ func TestEditAttrs(t *testing.T) {
 	product := admin.AddResource(&Product{})
 	i := 1
 	for _, testCase := range testCases {
-		var attrs []interface{}
+		var attrs []any
 		for _, param := range testCase.Params {
 			if strings.HasPrefix(param, "Section:") {
 				var rows [][]string
@@ -59,7 +59,7 @@ func TestEditAttrs(t *testing.T) {
 		if compareStringSlice(results, testCase.Result) {
 			color.Green(fmt.Sprintf("Edit Attrs TestCase #%d: Success\n", i))
 		} else {
-			t.Errorf(color.RedString(fmt.Sprintf("\nEdit Attrs TestCase #%d: Failure Result:%v\n", i, results)))
+			t.Error(color.RedString(fmt.Sprintf("\nEdit Attrs TestCase #%d: Failure Result:%v\n", i, results)))
 		}
 		i++
 	}

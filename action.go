@@ -14,7 +14,7 @@ import (
 type ActionArgument struct {
 	PrimaryValues       []string
 	Context             *Context
-	Argument            interface{}
+	Argument            any
 	SkipDefaultResponse bool
 }
 
@@ -23,9 +23,9 @@ type Action struct {
 	Name        string
 	Label       string
 	Method      string
-	URL         func(record interface{}, context *Context) string
+	URL         func(record any, context *Context) string
 	URLOpenType string
-	Visible     func(record interface{}, context *Context) bool
+	Visible     func(record any, context *Context) bool
 	Handler     func(argument *ActionArgument) error
 	Modes       []string
 	Resource    *Resource
@@ -145,7 +145,7 @@ func (action Action) ToParam() string {
 // HasPermission check if current user has permission for the action
 func (action Action) HasPermission(mode roles.PermissionMode, context *qor.Context) bool {
 	if action.Permission != nil {
-		var roles = []interface{}{}
+		var roles = []any{}
 		for _, role := range context.Roles {
 			roles = append(roles, role)
 		}
@@ -156,13 +156,13 @@ func (action Action) HasPermission(mode roles.PermissionMode, context *qor.Conte
 }
 
 // FindSelectedRecords find selected records when run bulk actions
-func (actionArgument *ActionArgument) FindSelectedRecords() []interface{} {
+func (actionArgument *ActionArgument) FindSelectedRecords() []any {
 	var (
 		context   = actionArgument.Context
 		resource  = context.Resource
-		records   = []interface{}{}
+		records   = []any{}
 		sqls      []string
-		sqlParams []interface{}
+		sqlParams []any
 	)
 
 	if len(actionArgument.PrimaryValues) == 0 {
@@ -190,7 +190,7 @@ func (actionArgument *ActionArgument) FindSelectedRecords() []interface{} {
 }
 
 // IsAllowed check if current user has permission to view the action
-func (action Action) isAllowed(mode roles.PermissionMode, context *Context, records ...interface{}) bool {
+func (action Action) isAllowed(mode roles.PermissionMode, context *Context, records ...any) bool {
 	if action.Visible != nil {
 		if len(records) == 0 {
 			if !action.Visible(nil, context) {

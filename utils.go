@@ -35,7 +35,7 @@ type ResourceNamer interface {
 type I18n interface {
 	Scope(scope string) I18n
 	Default(value string) I18n
-	T(locale string, key string, args ...interface{}) template.HTML
+	T(locale string, key string, args ...any) template.HTML
 }
 
 // RegisterViewPath register view path for all assetfs
@@ -63,7 +63,7 @@ func RegisterViewPath(pth string) {
 	}
 }
 
-func equal(a, b interface{}) bool {
+func equal(a, b any) bool {
 	return reflect.DeepEqual(a, b)
 }
 

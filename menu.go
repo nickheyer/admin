@@ -74,7 +74,7 @@ func (menu Menu) URL() string {
 // HasPermission check menu has permission or not
 func (menu Menu) HasPermission(mode roles.PermissionMode, context *qor.Context) bool {
 	if menu.Permission != nil {
-		var roles = []interface{}{}
+		var roles = []any{}
 		for _, role := range context.Roles {
 			roles = append(roles, role)
 		}

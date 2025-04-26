@@ -78,7 +78,7 @@ func (s *Searcher) Filter(filter *Filter, values *resource.MetaValues) *Searcher
 }
 
 // FindOne find one record based on current conditions
-func (s *Searcher) FindOne() (interface{}, error) {
+func (s *Searcher) FindOne() (any, error) {
 	var (
 		err     error
 		context = s.parseContext(false)
@@ -94,7 +94,7 @@ func (s *Searcher) FindOne() (interface{}, error) {
 }
 
 // FindMany find many records based on current conditions
-func (s *Searcher) FindMany() (interface{}, error) {
+func (s *Searcher) FindMany() (any, error) {
 	var (
 		err     error
 		context = s.parseContext(true)
@@ -297,7 +297,7 @@ func filterResourceByFields(res *Resource, filterFields []filterField, keyword s
 		var (
 			joinConditionsMap  = map[string][]string{}
 			conditions         []string
-			keywords           []interface{}
+			keywords           []any
 			keywordEx          []string //for select_many_config filter
 			generateConditions func(field filterField, scope *gorm.Scope)
 		)
