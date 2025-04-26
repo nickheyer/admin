@@ -10,7 +10,7 @@
 # PG
 POSTGRES_CONTAINER_NAME := qor_admin_test_postgres
 POSTGRES_IMAGE        := postgres:13       # TODO: Tests might need older version
-POSTGRES_HOST         := localhost
+POSTGRES_HOST         := 127.0.0.1
 POSTGRES_PORT         := 5432
 POSTGRES_DB           := qor_test
 POSTGRES_USER         := qor

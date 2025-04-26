@@ -8,8 +8,8 @@ import (
 
 	"github.com/jinzhu/gorm"
 	"github.com/jinzhu/now"
-	"github.com/qor/admin"
-	. "github.com/qor/admin/tests/dummy"
+	admin "github.com/nickheyer/admin/pkg"
+	. "github.com/nickheyer/admin/tests/dummy"
 	qorTestUtils "github.com/qor/qor/test/utils"
 	"github.com/theplant/testingutils"
 )

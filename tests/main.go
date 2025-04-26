@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/qor/admin/tests/dummy"
+	"github.com/nickheyer/admin/tests/dummy"
 	"github.com/qor/qor/utils"
 )
 

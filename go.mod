@@ -1,4 +1,4 @@
-module github.com/qor/admin
+module github.com/nickheyer/admin
 
 go 1.23.0
 
@@ -21,7 +21,7 @@ require (
 require (
 	github.com/andybalholm/cascadia v1.1.0 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20200428143746-21a406dcc535 // indirect
-	github.com/aws/aws-sdk-go-v2 v1.32.7 // indirect
+	github.com/aws/smithy-go v1.22.1 // indirect
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/disintegration/imaging v1.6.3-0.20201218193011-d40f48ce0f09 // indirect
 	github.com/go-sql-driver/mysql v1.5.0 // indirect
@@ -36,6 +36,7 @@ require (
 	github.com/mattn/go-isatty v0.0.11 // indirect
 	github.com/microcosm-cc/bluemonday v1.0.21 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/qor/admin v1.2.1-0.20241221082709-7177299dbbfd // indirect
 	github.com/qor/middlewares v0.0.0-20170822143614-781378b69454 // indirect
 	github.com/qor/oss v0.0.0-20241126061828-4629f3a3524a // indirect
 	github.com/qor/serializable_meta v0.0.0-20180510060738-5fd8542db417 // indirect

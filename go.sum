@@ -93,6 +93,8 @@ github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e h1:fD57ERR4JtEqsWb
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLANZcx1PVRCS0qkT7pwLkGfwJo4zjcN/Tysno=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
+github.com/qor/admin v1.2.1-0.20241221082709-7177299dbbfd h1:8HAKJ2L6CrQRWmgTrLgwGVAX2+2oZq6Z+Pk+qcF1AKo=
+github.com/qor/admin v1.2.1-0.20241221082709-7177299dbbfd/go.mod h1:Jyy/mw5g0UMeBbwfjq9Tal+NxdbzBqfqQNIIrZ20F1s=
 github.com/qor/assetfs v0.0.0-20170713023933-ff57fdc13a14 h1:JRpyNNSRAkwNHd4WgyPcalTAhxOCh3eFNMoQkxWhjSw=
 github.com/qor/assetfs v0.0.0-20170713023933-ff57fdc13a14/go.mod h1:GZSCP3jIneuPsav3pXmpmJwz9ES+Fuq4ZPOUC3wwckQ=
 github.com/qor/audited v0.0.0-20171228121055-b52c9c2f0571 h1:87fy9oxrDUTN77K9VwHkmyNynRYl+Kn7HkX2HZbQYrE=
